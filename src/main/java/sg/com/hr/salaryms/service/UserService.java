@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +16,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import sg.com.hr.salaryms.dto.OffsetPageableDTO;
 import sg.com.hr.salaryms.dto.ResponseResultDTO;
+import sg.com.hr.salaryms.dto.UserDTO;
 import sg.com.hr.salaryms.entity.UserEntity;
 import sg.com.hr.salaryms.exception.InvalidInputException;
 import sg.com.hr.salaryms.exception.NoSuchObjException;
@@ -37,22 +41,34 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public ResponseEntity<ResponseResultDTO> createUserResult(UserEntity inputEntity) {
-        createUser(inputEntity);
+    public ResponseEntity<ResponseResultDTO> createUserResult(UserDTO inputDTO) {
+        createUser(inputDTO);
         ResponseEntity<ResponseResultDTO> response = CommonMethod.responseCreated(CommonString.SUCCESS_CREATED);
         log.info("CreateUserResult Response : " + response);
         return response;
     }
 
-    public ResponseEntity<ResponseResultDTO> updateOverwriteUserResult(UserEntity inputEntity) {
-        updateOverwriteUser(inputEntity);
+    public ResponseEntity<ResponseResultDTO> uploadUserListResult(MultipartFile file) {
+        boolean creationFlag = uploadUserList(file);
+        ResponseEntity<ResponseResultDTO> response;
+        if (creationFlag) {
+            response = CommonMethod.responseCreated(CommonString.SUCCESS_FILE_CHANGED);
+        } else {
+            response = CommonMethod.responseOk(CommonString.SUCCESS_FILE_NOCHANGE);
+        }
+        log.info("UploadUserListResult Response : " + response);
+        return response;
+    }
+
+    public ResponseEntity<ResponseResultDTO> updateOverwriteUserResult(UserDTO inputDTO) {
+        updateOverwriteUser(inputDTO);
         ResponseEntity<ResponseResultDTO> response = CommonMethod.responseOk(CommonString.SUCCESS_UPDATED);
         log.info("UpdateOverwriteUserResult Response : " + response);
         return response;
     }
 
-    public ResponseEntity<ResponseResultDTO> updatePartialUserResult(UserEntity inputEntity) {
-        updatePartialUser(inputEntity);
+    public ResponseEntity<ResponseResultDTO> updatePartialUserResult(UserDTO inputDTO) {
+        updatePartialUser(inputDTO);
         ResponseEntity<ResponseResultDTO> response = CommonMethod.responseOk(CommonString.SUCCESS_UPDATED);
         log.info("UpdatePartialUserResult Response : " + response);
         return response;
@@ -80,60 +96,72 @@ public class UserService {
         return response;
     }
 
-    public void createUser(UserEntity inputEntity) {
-        if (inputEntity != null) {
-            if (!userRepository.existsById(inputEntity.getId())) {
-                // Check for multiple validation together
-                List<String> errorList = inputValidation(inputEntity, true);
-                if (errorList.isEmpty()) {
-                    userRepository.save(inputEntity);
+    @Transactional
+    public UserEntity createUser(UserDTO inputDTO) {
+        UserEntity result = null;
+        if (inputDTO != null) {
+            // Check for multiple validation together
+            List<String> errorList = inputValidation(inputDTO, true);
+            if (errorList.isEmpty()) {
+                if (!userRepository.existsById(inputDTO.getId())) {
+                    result = userRepository.save(convertToEntity(inputDTO));
                 } else {
-                    throw new InvalidInputException(
-                            errorList.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
+                    throw new ObjExistedException(CommonString.ERROR_EMP_ID_EXIST);
                 }
             } else {
-                throw new ObjExistedException(CommonString.ERROR_EMP_ID_EXIST);
+                throw new InvalidInputException(
+                        errorList.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
             }
         }
+        return result;
     }
 
-    public void updateOverwriteUser(UserEntity inputEntity) {
-        if (inputEntity != null) {
-            if (userRepository.existsById(inputEntity.getId())) {
-                // Check for multiple validation together
-                List<String> errorList = inputValidation(inputEntity, true);
-                if (errorList.isEmpty()) {
-                    userRepository.save(inputEntity);
+    @Transactional
+    public boolean uploadUserList(MultipartFile file) {
+        return true;
+    }
+
+    @Transactional
+    public UserEntity updateOverwriteUser(UserDTO inputDTO) {
+        UserEntity result = null;
+        if (inputDTO != null) {
+            // Check for multiple validation together
+            List<String> errorList = inputValidation(inputDTO, true);
+            if (errorList.isEmpty()) {
+                if (userRepository.existsById(inputDTO.getId())) {
+                    result = userRepository.save(convertToEntity(inputDTO));
                 } else {
-                    throw new InvalidInputException(
-                            errorList.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
+                    throw new NoSuchObjException(CommonString.ERROR_EMP_NOTFOUND);
                 }
             } else {
-                throw new NoSuchObjException(CommonString.ERROR_EMP_NOTFOUND);
+                throw new InvalidInputException(
+                        errorList.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
             }
         }
+        return result;
     }
 
-    public void updatePartialUser(UserEntity inputEntity) {
-        if (inputEntity != null) {
-            Optional<UserEntity> userOptional = userRepository.findById(inputEntity.getId());
-            if (userOptional.isPresent()) {
-                // Check for multiple validation together
-                List<String> errorList = inputValidation(inputEntity, false);
-                if (errorList.isEmpty()) {
-                    // Merge partial fields into base entity for update as a whole
-                    mergeObj(inputEntity, userOptional.get());
-                    userRepository.save(userOptional.get());
-                } else {
-                    throw new InvalidInputException(
-                            errorList.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
-                }
+    @Transactional
+    public UserEntity updatePartialUser(UserDTO inputDTO) {
+        UserEntity result = null;
+        if (inputDTO != null) {
+            // Check for multiple validation together
+            List<String> errorList = inputValidation(inputDTO, false);
+            if (errorList.isEmpty()) {
+                UserEntity userEntity = userRepository.findById(inputDTO.getId())
+                        .orElseThrow(() -> new NoSuchObjException(CommonString.ERROR_EMP_NOTFOUND));
+                // Merge partial fields into base entity for update as a whole
+                mergeObj(convertToEntity(inputDTO), userEntity);
+                result = userRepository.save(userEntity);
             } else {
-                throw new NoSuchObjException(CommonString.ERROR_EMP_NOTFOUND);
+                throw new InvalidInputException(
+                        errorList.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
             }
         }
+        return result;
     }
 
+    @Transactional
     public void deleteUser(String id) {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
@@ -166,30 +194,30 @@ public class UserService {
         return outputList;
     }
 
-    private List<String> inputValidation(UserEntity inputEntity, boolean requiredFlag) {
+    private List<String> inputValidation(UserDTO inputDTO, boolean requiredFlag) {
         List<String> errorList = new ArrayList<String>();
-        if (inputEntity != null) {
-            if (requiredFlag && inputEntity.getId() == null) {
+        if (inputDTO != null) {
+            if (requiredFlag && inputDTO.getId() == null) {
                 errorList.add(CommonString.ERROR_MISSING_ID);
             }
-            if (requiredFlag && inputEntity.getName() == null) {
+            if (requiredFlag && inputDTO.getName() == null) {
                 errorList.add(CommonString.ERROR_MISSING_NAME);
             }
-            if (inputEntity.getLogin() != null
-                    && userRepository.existsByLoginAndIdNot(inputEntity.getLogin(), inputEntity.getId())) {
+            if (inputDTO.getLogin() != null
+                    && userRepository.existsByLoginAndIdNot(inputDTO.getLogin(), inputDTO.getId())) {
                 errorList.add(CommonString.ERROR_EMP_LOGIN_EXIST);
-            } else if (requiredFlag && inputEntity.getLogin() == null) {
+            } else if (requiredFlag && inputDTO.getLogin() == null) {
                 errorList.add(CommonString.ERROR_MISSING_LOGIN);
             }
-            if (inputEntity.getSalary() != null && inputEntity.getSalary() < 0) {
+            if (inputDTO.getSalary() != null && inputDTO.getSalary() < 0) {
                 errorList.add(CommonString.ERROR_INVALID_SALARY);
-            } else if (requiredFlag && inputEntity.getSalary() == null) {
+            } else if (requiredFlag && inputDTO.getSalary() == null) {
                 errorList.add(CommonString.ERROR_MISSING_SALARY);
             }
             LocalDate baseDate = LocalDate.of(1920, 1, 1);
-            if (inputEntity.getStartDate() != null && baseDate.isAfter(inputEntity.getStartDate())) {
+            if (inputDTO.getStartDate() != null && baseDate.isAfter(inputDTO.getStartDate())) {
                 errorList.add(CommonString.ERROR_INVALID_DATE);
-            } else if (requiredFlag && inputEntity.getStartDate() == null) {
+            } else if (requiredFlag && inputDTO.getStartDate() == null) {
                 errorList.add(CommonString.ERROR_MISSING_DATE);
             }
         }
@@ -238,6 +266,15 @@ public class UserService {
                 return Sort.Direction.DESC;
             default:
                 return Sort.Direction.ASC;
+        }
+    }
+
+    private UserEntity convertToEntity(UserDTO inputDTO) {
+        if (inputDTO != null) {
+            return new UserEntity(inputDTO.getId(), inputDTO.getName(), inputDTO.getLogin(), inputDTO.getSalary(),
+                    inputDTO.getStartDate());
+        } else {
+            return null;
         }
     }
 

@@ -10,6 +10,8 @@ public class CommonString {
     public static final String SUCCESS_CREATED = "Successfully created";
     public static final String SUCCESS_UPDATED = "Successfully updated";
     public static final String SUCCESS_DELETED = "Successfully deleted";
+    public static final String SUCCESS_FILE_CHANGED = "Successfully uploaded with data created/ updated";
+    public static final String SUCCESS_FILE_NOCHANGE = "Successfully uploaded with no data changes";
     public static final String ERROR_EMP_NOTFOUND = "No such employee";
     public static final String ERROR_EMP_ID_EXIST = "Employee ID already exists";
     public static final String ERROR_EMP_LOGIN_EXIST = "Employee login not unique";

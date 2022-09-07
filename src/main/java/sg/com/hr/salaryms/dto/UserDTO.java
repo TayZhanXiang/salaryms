@@ -1,46 +1,27 @@
-package sg.com.hr.salaryms.entity;
+package sg.com.hr.salaryms.dto;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
-@Entity
-@Table(name = "EMPLOYEE")
-public class UserEntity {
+public class UserDTO implements Serializable {
 
     /*
-     * This class is use for JPA schema creation
+     * This class is use for object DTO
      */
 
-    @Id
-    @Column(name = "EMP_ID")
+    private static final long serialVersionUID = 1L;
+
     private String id;
-
-    @NotNull
-    @Column(name = "EMP_NAME")
     private String name;
-
-    @NotNull
-    @Column(name = "EMP_LOGIN")
     private String login;
-
-    @NotNull
-    @Column(name = "EMP_SALARY")
     private Double salary;
-
-    @NotNull
-    @Column(name = "EMP_DTE_START")
     private LocalDate startDate;
 
-    public UserEntity() {
+    public UserDTO() {
         super();
     }
 
-    public UserEntity(String id, String name, String login, Double salary, LocalDate startDate) {
+    public UserDTO(String id, String name, String login, Double salary, LocalDate startDate) {
         super();
         this.id = id;
         this.name = name;
@@ -105,7 +86,7 @@ public class UserEntity {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        UserEntity other = (UserEntity) obj;
+        UserDTO other = (UserDTO) obj;
         if (id == null) {
             if (other.id != null)
                 return false;
@@ -116,7 +97,7 @@ public class UserEntity {
 
     @Override
     public String toString() {
-        return "UserEntity [id=" + id + ", login=" + login + ", name=" + name + ", salary=" + salary + ", startDate="
+        return "UserDTO [id=" + id + ", login=" + login + ", name=" + name + ", salary=" + salary + ", startDate="
                 + startDate + "]";
     }
 

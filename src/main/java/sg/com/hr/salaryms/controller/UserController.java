@@ -3,6 +3,7 @@ package sg.com.hr.salaryms.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,9 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import sg.com.hr.salaryms.dto.ResponseResultDTO;
-import sg.com.hr.salaryms.entity.UserEntity;
+import sg.com.hr.salaryms.dto.UserDTO;
 import sg.com.hr.salaryms.service.UserService;
 
 @RestController
@@ -32,37 +34,43 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping(path = "", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<ResponseResultDTO> createUser(@RequestBody UserEntity inputEntity) {
-        log.info("CreateUser Input : Entity : " + inputEntity);
-        return userService.createUserResult(inputEntity);
+    @PostMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseResultDTO> createUser(@RequestBody UserDTO inputDTO) {
+        log.info("CreateUser Input : UserDTO : " + inputDTO);
+        return userService.createUserResult(inputDTO);
     }
 
-    @PutMapping(path = "", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<ResponseResultDTO> updateOverwriteUser(@RequestBody UserEntity inputEntity) {
-        log.info("UpdateOverwriteUser Input : Entity : " + inputEntity);
-        return userService.updateOverwriteUserResult(inputEntity);
+    @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseResultDTO> uploadUserList(@RequestParam("file") MultipartFile file) {
+        log.info("UploadUserList Input : File");
+        return userService.uploadUserListResult(file);
     }
 
-    @PatchMapping(path = "", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<ResponseResultDTO> updatePartialUser(@RequestBody UserEntity inputEntity) {
-        log.info("UpdatePartialUser Input : Entity : " + inputEntity);
-        return userService.updatePartialUserResult(inputEntity);
+    @PutMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseResultDTO> updateOverwriteUser(@RequestBody UserDTO inputDTO) {
+        log.info("UpdateOverwriteUser Input : UserDTO : " + inputDTO);
+        return userService.updateOverwriteUserResult(inputDTO);
     }
 
-    @DeleteMapping(path = "/{id}", produces = "application/json")
+    @PatchMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseResultDTO> updatePartialUser(@RequestBody UserDTO inputDTO) {
+        log.info("UpdatePartialUser Input : UserDTO : " + inputDTO);
+        return userService.updatePartialUserResult(inputDTO);
+    }
+
+    @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseResultDTO> deleteUser(@PathVariable String id) {
         log.info("DeleteUser Input : Id : " + id);
         return userService.deleteUserResult(id);
     }
 
-    @GetMapping(path = "/{id}", produces = "application/json")
+    @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseResultDTO> getUserObj(@PathVariable String id) {
         log.info("GetUserObj Input : Id : " + id);
         return userService.getUserObjResult(id);
     }
 
-    @GetMapping(path = "", produces = "application/json")
+    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseResultDTO> searchUserList(
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "minSalary", required = false, defaultValue = "0") Double minSalary,

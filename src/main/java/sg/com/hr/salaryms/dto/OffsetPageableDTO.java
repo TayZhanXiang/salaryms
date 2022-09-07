@@ -5,6 +5,10 @@ import org.springframework.data.domain.Sort;
 
 public class OffsetPageableDTO implements Pageable {
 
+    /*
+     * This class is to override default pageable behaviour
+     */
+
     private int offset;
     private int limit;
     private Sort sort;

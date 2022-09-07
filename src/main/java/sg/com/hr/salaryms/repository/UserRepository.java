@@ -16,8 +16,6 @@ public interface UserRepository extends JpaRepository<UserEntity, String> {
      * This class is for the data access (JPA) of related entities
      */
 
-    boolean existsById(String id);
-
     boolean existsByLoginAndIdNot(String login, String id);
 
     @Query("select n from UserEntity n where lower(n.name) like lower(concat('%', ?1,'%')) and n.salary >= ?2 and n.salary < ?3")
