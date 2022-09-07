@@ -9,6 +9,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import sg.com.hr.salaryms.dto.ResponseResultDTO;
@@ -59,6 +60,13 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<ResponseResultDTO> handleObjExistedException(ObjExistedException exception,
             WebRequest request) {
         ResponseResultDTO responseResult = new ResponseResultDTO(exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseResult);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    protected ResponseEntity<ResponseResultDTO> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException exception, WebRequest request) {
+        ResponseResultDTO responseResult = new ResponseResultDTO(CommonString.ERROR_INVALID_FORMAT);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseResult);
     }
 

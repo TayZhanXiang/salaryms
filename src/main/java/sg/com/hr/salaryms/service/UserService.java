@@ -9,9 +9,13 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import sg.com.hr.salaryms.dto.OffsetPageableDTO;
 import sg.com.hr.salaryms.dto.ResponseResultDTO;
 import sg.com.hr.salaryms.entity.UserEntity;
 import sg.com.hr.salaryms.exception.InvalidInputException;
@@ -65,6 +69,14 @@ public class UserService {
         UserEntity user = getUserObj(id);
         ResponseEntity<ResponseResultDTO> response = CommonMethod.responseOk(user);
         log.info("GetUserObjResult Response : " + response);
+        return response;
+    }
+
+    public ResponseEntity<ResponseResultDTO> searchUserListResult(String name, Double minSalary, Double maxSalary,
+            int offset, int limit, String sort, String order) {
+        List<UserEntity> outputList = searchUserList(name, minSalary, maxSalary, offset, limit, sort, order);
+        ResponseEntity<ResponseResultDTO> response = CommonMethod.responseOk(outputList);
+        log.info("SearchUserListResult Response : " + response);
         return response;
     }
 
@@ -139,6 +151,21 @@ public class UserService {
         }
     }
 
+    public List<UserEntity> searchUserList(String name, Double minSalary, Double maxSalary, int offset, int limit,
+            String sort, String order) {
+        List<UserEntity> outputList = new ArrayList<UserEntity>();
+        if (limit == 0) {
+            limit = Integer.MAX_VALUE;
+        }
+        Pageable pageable = new OffsetPageableDTO(offset, limit, Sort.by(orderMapping(order), sortMapping(sort)));
+        if (name != null && !name.isEmpty()) {
+            outputList = userRepository.searchUser(name, minSalary, maxSalary, pageable);
+        } else {
+            outputList = userRepository.searchUser(minSalary, maxSalary, pageable);
+        }
+        return outputList;
+    }
+
     private List<String> inputValidation(UserEntity inputEntity, boolean requiredFlag) {
         List<String> errorList = new ArrayList<String>();
         if (inputEntity != null) {
@@ -183,6 +210,34 @@ public class UserService {
             if (inputEntity.getStartDate() != null) {
                 baseEntity.setStartDate(inputEntity.getStartDate());
             }
+        }
+    }
+
+    private String sortMapping(String input) {
+        switch (input.toLowerCase()) {
+            case "id":
+                return "id";
+            case "name":
+                return "name";
+            case "login":
+                return "login";
+            case "salary":
+                return "salary";
+            case "startdate":
+                return "startDate";
+            default:
+                return "id";
+        }
+    }
+
+    private Direction orderMapping(String input) {
+        switch (input.toLowerCase()) {
+            case "asc":
+                return Sort.Direction.ASC;
+            case "desc":
+                return Sort.Direction.DESC;
+            default:
+                return Sort.Direction.ASC;
         }
     }
 

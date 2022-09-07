@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import sg.com.hr.salaryms.dto.ResponseResultDTO;
@@ -59,6 +60,20 @@ public class UserController {
     public ResponseEntity<ResponseResultDTO> getUserObj(@PathVariable String id) {
         log.info("GetUserObj Input : Id : " + id);
         return userService.getUserObjResult(id);
+    }
+
+    @GetMapping(path = "", produces = "application/json")
+    public ResponseEntity<ResponseResultDTO> searchUserList(
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "minSalary", required = false, defaultValue = "0") Double minSalary,
+            @RequestParam(value = "maxSalary", required = false, defaultValue = "4000") Double maxSalary,
+            @RequestParam(value = "offset", required = false, defaultValue = "0") int offset,
+            @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
+            @RequestParam(value = "sort", required = false, defaultValue = "id") String sort,
+            @RequestParam(value = "order", required = false, defaultValue = "asc") String order) {
+        log.info("SearchUserList Input : Name : " + name + " : MinSalary : " + minSalary + " : MaxSalary : " + maxSalary
+                + " : Offset : " + offset + " : Limit : " + limit + " : Sort : " + sort + " : Order : " + order);
+        return userService.searchUserListResult(name, minSalary, maxSalary, offset, limit, sort, order);
     }
 
 }
