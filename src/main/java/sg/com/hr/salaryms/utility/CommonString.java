@@ -16,6 +16,7 @@ public class CommonString {
     public static final String ERROR_EMP_ID_EXIST = "Employee ID already exists";
     public static final String ERROR_EMP_LOGIN_EXIST = "Employee login not unique";
     public static final String ERROR_INVALID_FORMAT = "Invalid data format";
+    public static final String ERROR_INVALID_FILE_FORMAT = "Invalid file format (Required CSV)";
     public static final String ERROR_INVALID_SALARY = "Invalid salary";
     public static final String ERROR_INVALID_DATE = "Invalid date";
     public static final String ERROR_MISSING_ID = "Missing id";
@@ -23,6 +24,8 @@ public class CommonString {
     public static final String ERROR_MISSING_LOGIN = "Missing login";
     public static final String ERROR_MISSING_SALARY = "Missing salary";
     public static final String ERROR_MISSING_DATE = "Missing date";
+    public static final String ERROR_MISSING_FILE = "Missing file";
+    public static final String ERROR_DUPLICATE_ID = "Duplicate row";
     public static final String ERROR_LOGIC = "Unexpected logic exception";
 
 }

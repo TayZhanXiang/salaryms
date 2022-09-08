@@ -1,5 +1,7 @@
 package sg.com.hr.salaryms.controller;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import sg.com.hr.salaryms.dto.ResponseResultDTO;
 import sg.com.hr.salaryms.dto.UserDTO;
+import sg.com.hr.salaryms.entity.UserEntity;
 import sg.com.hr.salaryms.service.UserService;
+import sg.com.hr.salaryms.utility.CommonMethod;
+import sg.com.hr.salaryms.utility.CommonString;
 
 @RestController
 @RequestMapping(path = "/users")
@@ -37,37 +42,60 @@ public class UserController {
     @PostMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseResultDTO> createUser(@RequestBody UserDTO inputDTO) {
         log.info("CreateUser Input : UserDTO : " + inputDTO);
-        return userService.createUserResult(inputDTO);
+        userService.createUser(inputDTO);
+        ResponseEntity<ResponseResultDTO> response = CommonMethod.responseCreated(CommonString.SUCCESS_CREATED);
+        log.info("CreateUser Response : " + response);
+        return response;
     }
 
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseResultDTO> uploadUserList(@RequestParam("file") MultipartFile file) {
         log.info("UploadUserList Input : File");
-        return userService.uploadUserListResult(file);
+        boolean creationFlag = userService.uploadUserList(file);
+        ResponseEntity<ResponseResultDTO> response;
+        if (creationFlag) {
+            response = CommonMethod.responseCreated(CommonString.SUCCESS_FILE_CHANGED);
+        } else {
+            response = CommonMethod.responseOk(CommonString.SUCCESS_FILE_NOCHANGE);
+        }
+        log.info("UploadUserList Response : " + response);
+        return response;
     }
 
     @PutMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseResultDTO> updateOverwriteUser(@RequestBody UserDTO inputDTO) {
         log.info("UpdateOverwriteUser Input : UserDTO : " + inputDTO);
-        return userService.updateOverwriteUserResult(inputDTO);
+        userService.updateOverwriteUser(inputDTO);
+        ResponseEntity<ResponseResultDTO> response = CommonMethod.responseOk(CommonString.SUCCESS_UPDATED);
+        log.info("UpdateOverwriteUser Response : " + response);
+        return response;
     }
 
     @PatchMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseResultDTO> updatePartialUser(@RequestBody UserDTO inputDTO) {
         log.info("UpdatePartialUser Input : UserDTO : " + inputDTO);
-        return userService.updatePartialUserResult(inputDTO);
+        userService.updatePartialUser(inputDTO);
+        ResponseEntity<ResponseResultDTO> response = CommonMethod.responseOk(CommonString.SUCCESS_UPDATED);
+        log.info("UpdatePartialUser Response : " + response);
+        return response;
     }
 
     @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseResultDTO> deleteUser(@PathVariable String id) {
         log.info("DeleteUser Input : Id : " + id);
-        return userService.deleteUserResult(id);
+        userService.deleteUser(id);
+        ResponseEntity<ResponseResultDTO> response = CommonMethod.responseOk(CommonString.SUCCESS_DELETED);
+        log.info("DeleteUser Response : " + response);
+        return response;
     }
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseResultDTO> getUserObj(@PathVariable String id) {
         log.info("GetUserObj Input : Id : " + id);
-        return userService.getUserObjResult(id);
+        UserEntity user = userService.getUserObj(id);
+        ResponseEntity<ResponseResultDTO> response = CommonMethod.responseOk(user);
+        log.info("GetUserObj Response : " + response);
+        return response;
     }
 
     @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -81,7 +109,11 @@ public class UserController {
             @RequestParam(value = "order", required = false, defaultValue = "asc") String order) {
         log.info("SearchUserList Input : Name : " + name + " : MinSalary : " + minSalary + " : MaxSalary : " + maxSalary
                 + " : Offset : " + offset + " : Limit : " + limit + " : Sort : " + sort + " : Order : " + order);
-        return userService.searchUserListResult(name, minSalary, maxSalary, offset, limit, sort, order);
+        List<UserEntity> outputList = userService.searchUserList(name, minSalary, maxSalary, offset, limit, sort,
+                order);
+        ResponseEntity<ResponseResultDTO> response = CommonMethod.responseOk(outputList);
+        log.info("SearchUserList Response : " + response);
+        return response;
     }
 
 }

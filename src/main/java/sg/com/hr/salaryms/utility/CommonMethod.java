@@ -1,5 +1,9 @@
 package sg.com.hr.salaryms.utility;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -25,6 +29,14 @@ public class CommonMethod {
     public static ResponseEntity<ResponseResultDTO> responseCreated(String message) {
         ResponseResultDTO responseResult = new ResponseResultDTO(message);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseResult);
+    }
+
+    public static Optional<Double> stringToDouble(String value) {
+        return value == null || value.isEmpty() ? Optional.empty() : Optional.of(Double.valueOf(value));
+    }
+
+    public static Optional<LocalDate> stringToLocalDate(String value, DateTimeFormatter formatter) {
+        return value == null || value.isEmpty() ? Optional.empty() : Optional.of(LocalDate.parse(value, formatter));
     }
 
 }
