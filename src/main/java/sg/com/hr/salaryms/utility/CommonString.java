@@ -25,7 +25,7 @@ public class CommonString {
     public static final String ERROR_MISSING_SALARY = "Missing salary";
     public static final String ERROR_MISSING_DATE = "Missing date";
     public static final String ERROR_MISSING_FILE = "Missing file";
-    public static final String ERROR_DUPLICATE_ID = "Duplicate row";
+    public static final String ERROR_DUPLICATE_ROW = "Invalid row with duplicate id/ login";
     public static final String ERROR_LOGIC = "Unexpected logic exception";
 
 }

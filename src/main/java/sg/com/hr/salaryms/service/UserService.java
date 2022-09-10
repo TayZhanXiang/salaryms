@@ -90,7 +90,7 @@ public class UserService {
                     }
                     return creationFlag;
                 } else {
-                    throw new InvalidInputException(CommonString.ERROR_DUPLICATE_ID);
+                    throw new InvalidInputException(CommonString.ERROR_DUPLICATE_ROW);
                 }
             } else {
                 throw new InvalidInputException(
@@ -202,7 +202,8 @@ public class UserService {
     private List<String> inputValidation(UserDTO inputDTO, boolean requiredFlag) {
         List<String> errorList = new ArrayList<String>();
         if (inputDTO != null) {
-            if (requiredFlag && (inputDTO.getId() == null || inputDTO.getId().isEmpty())) {
+            // Primary key is always required
+            if ((inputDTO.getId() == null || inputDTO.getId().isEmpty())) {
                 errorList.add(CommonString.ERROR_MISSING_ID);
             }
             if (requiredFlag && (inputDTO.getName() == null || inputDTO.getName().isEmpty())) {
@@ -267,7 +268,8 @@ public class UserService {
     }
 
     private boolean isUnique(List<UserDTO> inputList) {
-        return inputList.stream().map(UserDTO::getId).distinct().count() == inputList.size();
+        return inputList.stream().map(UserDTO::getId).distinct().count() == inputList.size()
+                && inputList.stream().map(UserDTO::getLogin).distinct().count() == inputList.size();
     }
 
     private String sortMapping(String input) {
